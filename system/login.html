@@ -13,12 +13,29 @@
       <p>Select your account type to continue.</p>
 
       <form id="login-form" class="login-form">
-        <label for="role">Login as</label>
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="Enter your email address" required>
+        
+        <label for="password">Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="password" placeholder="Enter your password" required>
+          <button type="button" class="password-toggle" id="password-toggle" aria-label="Toggle password visibility">
+            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-4 4-4 4 4 4 4-4 4-4-4-4-4-4-4zm0 6s4-2 2-2 2 2 2 2 2-2 2-2 2-2-2-2-2z"/>
+            </svg>
+            <svg class="eye-slash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+              <path d="M17.94 17.94A10.07 10.07 0 1 0-10.07 10.07A10.07 10.07 0 1 0 10.07 10.07 10.07-10.07 10.07zm-10.07-10.07v-10.07c0 2.89 2.34 5.35 5.35 5.35-5.35-5.35-5.35-5.35-5.35-5.35zm12.73 1.41l-6.36 6.36 6.36 6.36"/>
+            </svg>
+          </button>
+        </div>
+        
+        <label for="role">Account Type</label>
         <select id="role" required>
           <option value="">Select role</option>
           <option value="admin">Admin (Barangay Health Worker)</option>
           <option value="super_admin">Super Admin</option>
         </select>
+        
         <button type="submit" class="btn primary login-btn">Login</button>
       </form>
 
@@ -29,29 +46,98 @@
   <script>
     (function () {
       const loginForm = document.querySelector("#login-form");
+      const emailInput = document.querySelector("#email");
+      const passwordInput = document.querySelector("#password");
+      const passwordToggle = document.querySelector("#password-toggle");
       const roleInput = document.querySelector("#role");
       const loginStatus = document.querySelector("#login-status");
 
-      if (!loginForm || !roleInput || !loginStatus) return;
+      if (!loginForm || !emailInput || !passwordInput || !passwordToggle || !roleInput || !loginStatus) return;
+
+      // Demo credentials for testing
+      const validCredentials = {
+        admin: { email: "admin@cabadbaran.gov.ph", password: "admin123" },
+        super_admin: { email: "superadmin@cabadbaran.gov.ph", password: "super123" }
+      };
+
+      // Set default values for demo
+      emailInput.value = "admin@cabadbaran.gov.ph";
+      passwordInput.value = "admin123";
+      roleInput.value = "admin";
 
       loginForm.addEventListener("submit", function (event) {
         event.preventDefault();
+        
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
         const role = roleInput.value;
 
-        if (!role) {
-          loginStatus.textContent = "Please select a valid role.";
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          loginStatus.textContent = "Please enter a valid email address.";
+          loginStatus.style.color = "#dc2626";
           return;
         }
 
+        // Validation
+        if (!email || !password || !role) {
+          loginStatus.textContent = "Please fill in all fields.";
+          loginStatus.style.color = "#dc2626";
+          return;
+        }
+
+        // Check credentials
+        const validCreds = validCredentials[role];
+        if (!validCreds || email !== validCreds.email || password !== validCreds.password) {
+          loginStatus.textContent = "Invalid email, password, or role.";
+          loginStatus.style.color = "#dc2626";
+          return;
+        }
+
+        // Store user info in sessionStorage
         sessionStorage.setItem("userRole", role);
+        sessionStorage.setItem("email", email);
+        sessionStorage.setItem("isLoggedIn", "true");
+        
         loginStatus.textContent = "Login successful. Redirecting...";
+        loginStatus.style.color = "#16a34a";
 
-        if (role === "admin") {
-          window.location.href = "index.html";
-          return;
+        // Redirect based on role
+        setTimeout(() => {
+          if (role === "admin") {
+            window.location.href = "index.html";
+            return;
+          }
+          window.location.href = "super-admin.html";
+        }, 1000);
+      });
+
+      // Password visibility toggle
+      passwordToggle.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        const eyeIcon = passwordToggle.querySelector('.eye-icon');
+        const eyeSlashIcon = passwordToggle.querySelector('.eye-slash-icon');
+        
+        if (type === 'text') {
+          eyeIcon.style.display = 'none';
+          eyeSlashIcon.style.display = 'block';
+        } else {
+          eyeIcon.style.display = 'block';
+          eyeSlashIcon.style.display = 'none';
         }
+      });
 
-        window.location.href = "super-admin.html";
+      // Real-time validation feedback
+      [emailInput, passwordInput, roleInput].forEach(input => {
+        input.addEventListener('input', function() {
+          if (loginStatus.textContent.includes("Invalid") || loginStatus.textContent.includes("fill in all") || loginStatus.textContent.includes("valid email")) {
+            loginStatus.textContent = "Enter your credentials to continue.";
+            loginStatus.style.color = "#6b7280";
+          }
+        });
       });
     })();
   </script>

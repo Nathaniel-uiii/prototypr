@@ -5,6 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Super Admin Dashboard | GIS Health Monitoring</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #barangay-map-container {
+      height: 500px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .barangay-popup {
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    }
+    .barangay-popup h3 {
+      margin: 0 0 8px 0;
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+    .barangay-popup p {
+      margin: 4px 0;
+      font-size: 0.9rem;
+    }
+    .barangay-popup .risk-high {
+      color: var(--high);
+      font-weight: 600;
+    }
+    .barangay-popup .risk-medium {
+      color: var(--medium);
+      font-weight: 600;
+    }
+    .barangay-popup .risk-low {
+      color: var(--low);
+      font-weight: 600;
+    }
+    .map-legend {
+      background: white;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .map-legend h4 {
+      margin: 0 0 8px 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .map-legend-item {
+      display: flex;
+      align-items: center;
+      margin: 4px 0;
+      font-size: 0.85rem;
+    }
+    .map-legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      margin-right: 8px;
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+  </style>
 </head>
 <body>
   <button type="button" class="menu-fab" id="sidebar-toggle" aria-label="Toggle navigation" aria-expanded="true">
@@ -16,7 +74,16 @@
   </button>
   <main class="layout sidebar-open">
     <aside class="sidebar">
-      <h2>Navigation</h2>
+      <div class="profile-section">
+        <div class="profile-picture">
+          <img src="https://picsum.photos/seed/superadmin-avatar/80/80.jpg" alt="Super Admin Profile" />
+        </div>
+        <div class="profile-info">
+          <h3 class="profile-name">Super Admin</h3>
+          <p class="profile-email">superadmin@cabadbaran.gov.ph</p>
+          <span class="pill role-super">System Administrator</span>
+        </div>
+      </div>
       <nav>
         <a href="#super-admin-dashboard">Super Admin Dashboard</a>
         <a href="#system-oversight">System Oversight</a>
@@ -153,11 +220,10 @@
           <span class="pill role-super">GIS</span>
         </div>
         <p class="status-text">
-          Navigate Cabadbaran City barangays here. Embed your Leaflet, Google Maps, or QGIS Web map in the container below when ready.
+          Interactive map showing Cabadbaran City barangays with health monitoring data. Click on barangays to view detailed information.
         </p>
-        <div class="map-placeholder" role="region" aria-label="Map area for barangay navigation">
-          <p>Map integration area</p>
-          <small>Add GeoJSON layers, markers per barangay, and routing in this space.</small>
+        <div id="barangay-map-container" role="region" aria-label="Interactive map of Cabadbaran City barangays">
+          <!-- Map will be initialized here -->
         </div>
       </section>
 
@@ -178,6 +244,7 @@
       </section>
     </section>
   </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     (function () {
       const currentRole = sessionStorage.getItem("userRole");
@@ -204,6 +271,291 @@
           window.location.href = "login.html";
         });
       }
+
+      // Initialize the interactive map
+      function initializeMap() {
+        // Cabadbaran City center coordinates (more precise)
+        const mapCenter = [8.9763, 125.5406];
+        
+        // Create the map focused on Cabadbaran City
+        const map = L.map('barangay-map-container').setView(mapCenter, 13);
+
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 18
+        }).addTo(map);
+
+        // Cabadbaran City barangays with realistic coordinates and health data
+        const barangays = [
+          {
+            name: "Barangay 1 (Poblacion)",
+            coordinates: [8.9763, 125.5406],
+            totalCases: 84,
+            malnourishedCases: 17,
+            prevalenceRate: 20.2,
+            riskLevel: "high",
+            healthWorkers: 2,
+            lastAssessment: "2026-04-15"
+          },
+          {
+            name: "Barangay 2",
+            coordinates: [8.9798, 125.5421],
+            totalCases: 62,
+            malnourishedCases: 8,
+            prevalenceRate: 12.9,
+            riskLevel: "medium",
+            healthWorkers: 1,
+            lastAssessment: "2026-04-18"
+          },
+          {
+            name: "Barangay 3",
+            coordinates: [8.9735, 125.5389],
+            totalCases: 45,
+            malnourishedCases: 4,
+            prevalenceRate: 8.9,
+            riskLevel: "low",
+            healthWorkers: 1,
+            lastAssessment: "2026-04-20"
+          },
+          {
+            name: "Barangay 4",
+            coordinates: [8.9812, 125.5448],
+            totalCases: 73,
+            malnourishedCases: 11,
+            prevalenceRate: 15.1,
+            riskLevel: "medium",
+            healthWorkers: 2,
+            lastAssessment: "2026-04-16"
+          },
+          {
+            name: "Barangay 5",
+            coordinates: [8.9718, 125.5367],
+            totalCases: 38,
+            malnourishedCases: 3,
+            prevalenceRate: 7.9,
+            riskLevel: "low",
+            healthWorkers: 1,
+            lastAssessment: "2026-04-19"
+          },
+          {
+            name: "Barangay 6",
+            coordinates: [8.9845, 125.5472],
+            totalCases: 91,
+            malnourishedCases: 19,
+            prevalenceRate: 20.9,
+            riskLevel: "high",
+            healthWorkers: 3,
+            lastAssessment: "2026-04-14"
+          },
+          {
+            name: "Barangay 7",
+            coordinates: [8.9692, 125.5345],
+            totalCases: 55,
+            malnourishedCases: 6,
+            prevalenceRate: 10.9,
+            riskLevel: "medium",
+            healthWorkers: 1,
+            lastAssessment: "2026-04-17"
+          },
+          {
+            name: "Barangay 8",
+            coordinates: [8.9878, 125.5495],
+            totalCases: 67,
+            malnourishedCases: 9,
+            prevalenceRate: 13.4,
+            riskLevel: "medium",
+            healthWorkers: 2,
+            lastAssessment: "2026-04-13"
+          },
+          {
+            name: "Barangay 9",
+            coordinates: [8.9665, 125.5323],
+            totalCases: 41,
+            malnourishedCases: 2,
+            prevalenceRate: 4.9,
+            riskLevel: "low",
+            healthWorkers: 1,
+            lastAssessment: "2026-04-21"
+          },
+          {
+            name: "Barangay 10",
+            coordinates: [8.9911, 125.5518],
+            totalCases: 78,
+            malnourishedCases: 15,
+            prevalenceRate: 19.2,
+            riskLevel: "high",
+            healthWorkers: 2,
+            lastAssessment: "2026-04-12"
+          },
+          {
+            name: "Barangay 11",
+            coordinates: [8.9642, 125.5301],
+            totalCases: 52,
+            malnourishedCases: 5,
+            prevalenceRate: 9.6,
+            riskLevel: "low",
+            healthWorkers: 1,
+            lastAssessment: "2026-04-18"
+          },
+          {
+            name: "Barangay 12",
+            coordinates: [8.9944, 125.5541],
+            totalCases: 85,
+            malnourishedCases: 18,
+            prevalenceRate: 21.2,
+            riskLevel: "high",
+            healthWorkers: 3,
+            lastAssessment: "2026-04-11"
+          },
+          {
+            name: "Barangay 13",
+            coordinates: [8.9619, 125.5279],
+            totalCases: 48,
+            malnourishedCases: 4,
+            prevalenceRate: 8.3,
+            riskLevel: "low",
+            healthWorkers: 1,
+            lastAssessment: "2026-04-19"
+          },
+          {
+            name: "Barangay 14",
+            coordinates: [8.9977, 125.5564],
+            totalCases: 58,
+            malnourishedCases: 13,
+            prevalenceRate: 22.4,
+            riskLevel: "high",
+            healthWorkers: 2,
+            lastAssessment: "2026-04-10"
+          },
+          {
+            name: "Barangay 15",
+            coordinates: [8.9596, 125.5257],
+            totalCases: 43,
+            malnourishedCases: 3,
+            prevalenceRate: 7.0,
+            riskLevel: "low",
+            healthWorkers: 1,
+            lastAssessment: "2026-04-20"
+          }
+        ];
+
+        // Function to get color based on risk level
+        function getRiskColor(riskLevel) {
+          switch(riskLevel) {
+            case 'high': return '#dc2626';
+            case 'medium': return '#f59e0b';
+            case 'low': return '#16a34a';
+            default: return '#6b7280';
+          }
+        }
+
+        // Function to get risk text
+        function getRiskText(riskLevel) {
+          switch(riskLevel) {
+            case 'high': return 'High Risk';
+            case 'medium': return 'Moderate Risk';
+            case 'low': return 'Low Risk';
+            default: return 'Unknown';
+          }
+        }
+
+        // Add markers for each barangay
+        barangays.forEach(barangay => {
+          const color = getRiskColor(barangay.riskLevel);
+          const riskText = getRiskText(barangay.riskLevel);
+          
+          // Create custom icon
+          const customIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="
+              background-color: ${color};
+              width: 12px;
+              height: 12px;
+              border-radius: 50%;
+              border: 2px solid white;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            "></div>`,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+          });
+
+          // Create popup content
+          const popupContent = `
+            <div class="barangay-popup">
+              <h3>${barangay.name}</h3>
+              <p><strong>Total Children Assessed:</strong> ${barangay.totalCases}</p>
+              <p><strong>Malnourished Cases:</strong> ${barangay.malnourishedCases}</p>
+              <p><strong>Prevalence Rate:</strong> ${barangay.prevalenceRate}%</p>
+              <p><strong>Risk Level:</strong> <span class="risk-${barangay.riskLevel}">${riskText}</span></p>
+              <p><strong>Health Workers:</strong> ${barangay.healthWorkers}</p>
+              <p><strong>Last Assessment:</strong> ${barangay.lastAssessment}</p>
+            </div>
+          `;
+
+          // Add marker to map
+          const marker = L.marker(barangay.coordinates, { icon: customIcon })
+            .addTo(map)
+            .bindPopup(popupContent);
+
+          // Add circle overlay to show barangay coverage area
+          L.circle(barangay.coordinates, {
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.2,
+            radius: 800
+          }).addTo(map);
+        });
+
+        // Add legend
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function(map) {
+          const div = L.DomUtil.create('div', 'map-legend');
+          div.innerHTML = `
+            <h4>Risk Level Legend</h4>
+            <div class="map-legend-item">
+              <div class="map-legend-color" style="background-color: #dc2626;"></div>
+              <span>High Risk (>=20%)</span>
+            </div>
+            <div class="map-legend-item">
+              <div class="map-legend-color" style="background-color: #f59e0b;"></div>
+              <span>Moderate Risk (10-19.9%)</span>
+            </div>
+            <div class="map-legend-item">
+              <div class="map-legend-color" style="background-color: #16a34a;"></div>
+              <span>Low Risk (<10%)</span>
+            </div>
+          `;
+          return div;
+        };
+        legend.addTo(map);
+
+        // Add scale control
+        L.control.scale().addTo(map);
+
+        // Add click event to show coordinates (for debugging)
+        map.on('click', function(e) {
+          console.log('Clicked at: ' + e.latlng.toString());
+        });
+
+        return map;
+      }
+
+      // Initialize map when page loads
+      let map;
+      document.addEventListener('DOMContentLoaded', function() {
+        // Small delay to ensure container is ready
+        setTimeout(() => {
+          map = initializeMap();
+        }, 100);
+      });
+
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        if (map) {
+          map.invalidateSize();
+        }
+      });
     })();
   </script>
 </body>

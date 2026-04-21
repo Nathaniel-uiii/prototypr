@@ -16,7 +16,16 @@
   </button>
   <main class="layout sidebar-open">
     <aside class="sidebar">
-      <h2>Navigation</h2>
+      <div class="profile-section">
+        <div class="profile-picture">
+          <img src="https://picsum.photos/seed/admin-avatar/80/80.jpg" alt="Admin Profile" />
+        </div>
+        <div class="profile-info">
+          <h3 class="profile-name">Admin User</h3>
+          <p class="profile-email">admin@cabadbaran.gov.ph</p>
+          <span class="pill role-admin">Barangay Health Worker</span>
+        </div>
+      </div>
       <p class="nav-group-title">Main</p>
       <nav>
         <a href="#admin-dashboard">Admin Dashboard</a>
@@ -145,6 +154,16 @@
             </div>
             <button type="button" class="btn success" id="submit-cases-btn">Submit Case List to Super Admin</button>
           </div>
+          <div class="data-management">
+            <h3>Data Management</h3>
+            <div class="action-group">
+              <button type="button" class="btn primary" id="export-btn">Export Data</button>
+              <label for="import-file" class="btn ghost">Import Data</label>
+              <input type="file" id="import-file" accept=".json" style="display: none;">
+              <button type="button" class="btn ghost" id="generate-sample-btn">Generate Sample Data</button>
+              <button type="button" class="btn danger" id="clear-data-btn">Clear All Data</button>
+            </div>
+          </div>
           <p class="status-text" id="submission-status">No submission yet.</p>
         </form>
 
@@ -254,21 +273,159 @@
       const feedbackList = document.querySelector("#feedback-list");
 
       let editingCaseId = null;
-      let nextId = 2;
-      const submissionHistory = [];
-      const cases = [
-        {
-          id: 1,
-          childName: "Sample Child A",
-          childAge: "4",
-          childSex: "Female",
-          barangay: "Barangay 1",
-          dateScreened: "2026-04-17",
-          nutrition: "Underweight",
-          workflow: "Draft",
-          remarks: "Initial assessment completed."
+      let nextId = 1;
+      let submissionHistory = [];
+      let cases = [];
+
+      // Data persistence functions
+      function saveToLocalStorage() {
+        try {
+          localStorage.setItem('healthCases', JSON.stringify(cases));
+          localStorage.setItem('submissionHistory', JSON.stringify(submissionHistory));
+          localStorage.setItem('nextId', JSON.stringify(nextId));
+        } catch (error) {
+          console.error('Error saving to localStorage:', error);
+          submissionStatus.textContent = 'Error saving data. Storage may be full.';
         }
-      ];
+      }
+
+      function loadFromLocalStorage() {
+        try {
+          const savedCases = localStorage.getItem('healthCases');
+          const savedHistory = localStorage.getItem('submissionHistory');
+          const savedNextId = localStorage.getItem('nextId');
+          
+          if (savedCases) cases = JSON.parse(savedCases);
+          if (savedHistory) submissionHistory = JSON.parse(savedHistory);
+          if (savedNextId) nextId = JSON.parse(savedNextId);
+          
+          // If no data exists, initialize with sample data
+          if (cases.length === 0) {
+            cases = [
+              {
+                id: 1,
+                childName: "Sample Child A",
+                childAge: "4",
+                childSex: "Female",
+                barangay: "Barangay 1",
+                dateScreened: "2026-04-17",
+                nutrition: "Underweight",
+                workflow: "Draft",
+                remarks: "Initial assessment completed."
+              }
+            ];
+            nextId = 2;
+          }
+        } catch (error) {
+          console.error('Error loading from localStorage:', error);
+          cases = [];
+          submissionHistory = [];
+          nextId = 1;
+        }
+      }
+
+      function exportData() {
+        const data = {
+          cases: cases,
+          submissionHistory: submissionHistory,
+          exportDate: new Date().toISOString()
+        };
+        const dataStr = JSON.stringify(data, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `health-monitoring-data-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+        showToast("Data exported successfully!", "success");
+      }
+
+      function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const data = JSON.parse(e.target.result);
+            if (data.cases && Array.isArray(data.cases)) {
+              cases = data.cases;
+              submissionHistory = data.submissionHistory || [];
+              nextId = Math.max(...cases.map(c => c.id), 0) + 1;
+              saveToLocalStorage();
+              refreshUI();
+              submissionStatus.textContent = 'Data imported successfully!';
+            } else {
+              submissionStatus.textContent = 'Invalid data format.';
+            }
+          } catch (error) {
+            submissionStatus.textContent = 'Error importing data. Please check the file format.';
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function generateSampleData() {
+        const sampleNames = ['Juan Dela Cruz', 'Maria Santos', 'Jose Reyes', 'Ana Garcia', 'Pedro Lopez'];
+        const barangays = ['Barangay 1', 'Barangay 2', 'Barangay 3', 'Barangay 4', 'Barangay 5'];
+        const nutritionStatuses = ['Normal', 'Underweight', 'Severely Underweight'];
+        const workflowStatuses = ['Draft', 'For Submission', 'Submitted'];
+        
+        for (let i = 0; i < 10; i++) {
+          const randomDate = new Date(2026, 3, Math.floor(Math.random() * 30) + 1);
+          cases.push({
+            id: nextId++,
+            childName: sampleNames[Math.floor(Math.random() * sampleNames.length)] + ' ' + (i + 1),
+            childAge: String(Math.floor(Math.random() * 10) + 1),
+            childSex: Math.random() > 0.5 ? 'Male' : 'Female',
+            barangay: barangays[Math.floor(Math.random() * barangays.length)],
+            dateScreened: randomDate.toISOString().split('T')[0],
+            nutrition: nutritionStatuses[Math.floor(Math.random() * nutritionStatuses.length)],
+            workflow: workflowStatuses[Math.floor(Math.random() * workflowStatuses.length)],
+            remarks: Math.random() > 0.7 ? 'Sample remark for testing' : ''
+          });
+        }
+        saveToLocalStorage();
+        refreshUI();
+        submissionStatus.textContent = 'Sample data generated successfully!';
+      }
+
+      function clearAllData() {
+        if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+          cases = [];
+          submissionHistory = [];
+          nextId = 1;
+          localStorage.removeItem('healthCases');
+          localStorage.removeItem('submissionHistory');
+          localStorage.removeItem('nextId');
+          refreshUI();
+          submissionStatus.textContent = 'All data cleared.';
+        }
+      }
+
+      // Toast notification system
+      function showToast(message, type = 'info') {
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+          existingToast.remove();
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 100);
+        
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      // Load data on page load
+      loadFromLocalStorage();
 
       if (layout && sidebarToggle) {
         sidebarToggle.addEventListener("click", function () {
@@ -441,16 +598,69 @@
         const workflow = workflowInput.value.trim();
         const remarks = remarksInput.value.trim();
 
-        if (!childName || !childAge || !childSex || !barangay || !dateScreened || !nutrition || !workflow) {
-          submissionStatus.textContent = "Please fill out all required fields.";
+        // Enhanced validation
+        const validationErrors = [];
+        
+        if (!childName.trim()) {
+          validationErrors.push("Child name is required");
+        } else if (childName.trim().length < 2) {
+          validationErrors.push("Child name must be at least 2 characters");
+        } else if (childName.trim().length > 100) {
+          validationErrors.push("Child name must be less than 100 characters");
+        }
+        
+        if (!childAge.trim()) {
+          validationErrors.push("Age is required");
+        } else {
+          const ageNumber = Number(childAge);
+          if (!Number.isInteger(ageNumber) || ageNumber < 0 || ageNumber > 18) {
+            validationErrors.push("Age must be a whole number from 0 to 18");
+          }
+        }
+        
+        if (!childSex) {
+          validationErrors.push("Sex is required");
+        }
+        
+        if (!barangay.trim()) {
+          validationErrors.push("Barangay is required");
+        } else if (barangay.trim().length < 2) {
+          validationErrors.push("Barangay name must be at least 2 characters");
+        }
+        
+        if (!dateScreened) {
+          validationErrors.push("Date screened is required");
+        } else {
+          const screenedDate = new Date(dateScreened);
+          const today = new Date();
+          const maxDate = new Date(today.getFullYear(), today.getMonth() + 6, today.getDate());
+          if (screenedDate > maxDate) {
+            validationErrors.push("Date screened cannot be more than 6 months in the future");
+          }
+          if (screenedDate < new Date('2020-01-01')) {
+            validationErrors.push("Date screened cannot be before 2020");
+          }
+        }
+        
+        if (!nutrition) {
+          validationErrors.push("Nutritional status is required");
+        }
+        
+        if (!workflow) {
+          validationErrors.push("Workflow status is required");
+        }
+        
+        if (remarks && remarks.length > 500) {
+          validationErrors.push("Remarks must be less than 500 characters");
+        }
+        
+        if (validationErrors.length > 0) {
+          submissionStatus.textContent = "Validation errors: " + validationErrors.join("; ");
+          submissionStatus.style.color = "var(--high)";
           return;
         }
-
-        const ageNumber = Number(childAge);
-        if (!Number.isInteger(ageNumber) || ageNumber < 0 || ageNumber > 18) {
-          submissionStatus.textContent = "Age must be a whole number from 0 to 18.";
-          return;
-        }
+        
+        submissionStatus.style.color = "var(--muted)";
 
         const isDuplicate = cases.some(function (item) {
           return item.id !== editingCaseId &&
@@ -493,6 +703,8 @@
         }
 
         submissionStatus.textContent = "Case list updated. Ready for submission.";
+        showToast("Case saved successfully!", "success");
+        saveToLocalStorage();
         refreshUI();
         resetCaseForm();
       });
@@ -518,6 +730,8 @@
           }
           if (editingCaseId === caseId) resetCaseForm();
           submissionStatus.textContent = "Case deleted. Review and submit updates.";
+          showToast("Case deleted successfully!", "success");
+          saveToLocalStorage();
           refreshUI();
           return;
         }
@@ -545,6 +759,8 @@
             currentCase.workflow = "Returned for Correction";
           }
           submissionStatus.textContent = "Remark saved.";
+          showToast("Remark saved successfully!", "success");
+          saveToLocalStorage();
           refreshUI();
         }
       });
@@ -576,6 +792,10 @@
         submissionStatus.textContent = submittedNow > 0
           ? "Submitted " + submittedNow + " case(s) to Super Admin for validation."
           : "No Draft/For Submission cases were available to submit.";
+        if (submittedNow > 0) {
+          showToast(`Successfully submitted ${submittedNow} case(s)!`, "success");
+        }
+        saveToLocalStorage();
         refreshUI();
       });
 
@@ -583,6 +803,28 @@
         filterInput.addEventListener("input", renderCases);
         filterInput.addEventListener("change", renderCases);
       });
+
+      // Data management event listeners
+      const exportBtn = document.querySelector("#export-btn");
+      const importFile = document.querySelector("#import-file");
+      const generateSampleBtn = document.querySelector("#generate-sample-btn");
+      const clearDataBtn = document.querySelector("#clear-data-btn");
+
+      if (exportBtn) {
+        exportBtn.addEventListener("click", exportData);
+      }
+
+      if (importFile) {
+        importFile.addEventListener("change", importData);
+      }
+
+      if (generateSampleBtn) {
+        generateSampleBtn.addEventListener("click", generateSampleData);
+      }
+
+      if (clearDataBtn) {
+        clearDataBtn.addEventListener("click", clearAllData);
+      }
 
       refreshUI();
     })();
