@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin Dashboard | GIS Health Monitoring</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <button type="button" class="menu-fab" id="sidebar-toggle" aria-label="Toggle navigation" aria-expanded="true">
+    <span class="menu-fab-lines">
+      <span></span>
+      <span></span>
+      <span></span>
+    </span>
+  </button>
+  <main class="layout sidebar-open">
+    <aside class="sidebar">
+      <h2>Navigation</h2>
+      <nav>
+        <a href="#super-admin-dashboard">Super Admin Dashboard</a>
+        <a href="#system-oversight">System Oversight</a>
+        <a href="#critical-barangays">Critical Barangays</a>
+        <a href="#barangay-map">Map</a>
+        <a href="#critical-alerts">Critical Alerts</a>
+      </nav>
+      <div class="legend">
+        <h3>Legend</h3>
+        <p><span class="dot high"></span>High-risk barangay</p>
+        <p><span class="dot medium"></span>Moderate-risk barangay</p>
+        <p><span class="dot low"></span>Low-risk barangay</p>
+      </div>
+      <button type="button" class="btn ghost logout-btn sidebar-logout" id="logout-btn">Logout</button>
+    </aside>
+
+    <section class="content">
+      <section id="super-admin-dashboard" class="panel">
+        <div class="panel-title">
+          <h2>Super Admin Dashboard</h2>
+          <span class="pill role-super">Role: Super Admin</span>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <h3>Total Admin Users</h3>
+            <p class="number">12</p>
+            <small>Across health offices</small>
+          </article>
+          <article class="card">
+            <h3>System Accuracy</h3>
+            <p class="number">94.2%</p>
+            <small>Algorithm classification rate</small>
+          </article>
+          <article class="card warning">
+            <h3>High-Risk Barangays</h3>
+            <p class="number">9</p>
+            <small>Above risk threshold</small>
+          </article>
+          <article class="card">
+            <h3>Reports Generated</h3>
+            <p class="number">228</p>
+            <small>Last 30 days</small>
+          </article>
+        </div>
+      </section>
+
+      <section id="system-oversight" class="panel">
+        <h2>System Oversight</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Office</th>
+                <th>Assigned Admin</th>
+                <th>Reports Submitted</th>
+                <th>Pending</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>City Health Office</td>
+                <td>4</td>
+                <td>41</td>
+                <td>2</td>
+                <td><span class="pill risk medium">Needs Follow-up</span></td>
+              </tr>
+              <tr>
+                <td>District Cluster A</td>
+                <td>3</td>
+                <td>52</td>
+                <td>0</td>
+                <td><span class="pill risk low">Complete</span></td>
+              </tr>
+              <tr>
+                <td>District Cluster B</td>
+                <td>5</td>
+                <td>38</td>
+                <td>4</td>
+                <td><span class="pill risk high">Urgent</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="critical-barangays" class="panel">
+        <div class="panel-title">
+          <h2>Critical Barangays</h2>
+          <span class="pill risk high">High-Risk Monitoring</span>
+        </div>
+        <p class="status-text">Barangays with prevalence rate of 20% or higher are flagged as critical.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Barangay</th>
+                <th>Total Cases</th>
+                <th>Malnourished Cases</th>
+                <th>Prevalence Rate</th>
+                <th>Risk Level</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Barangay 14</td>
+                <td>58</td>
+                <td>13</td>
+                <td>22.4%</td>
+                <td><span class="pill risk high">Critical</span></td>
+              </tr>
+              <tr>
+                <td>Barangay 1</td>
+                <td>84</td>
+                <td>17</td>
+                <td>20.2%</td>
+                <td><span class="pill risk high">Critical</span></td>
+              </tr>
+              <tr>
+                <td>Barangay 22</td>
+                <td>43</td>
+                <td>9</td>
+                <td>20.9%</td>
+                <td><span class="pill risk high">Critical</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="barangay-map" class="panel map-panel">
+        <div class="panel-title">
+          <h2>Barangay Map</h2>
+          <span class="pill role-super">GIS</span>
+        </div>
+        <p class="status-text">
+          Navigate Cabadbaran City barangays here. Embed your Leaflet, Google Maps, or QGIS Web map in the container below when ready.
+        </p>
+        <div class="map-placeholder" role="region" aria-label="Map area for barangay navigation">
+          <p>Map integration area</p>
+          <small>Add GeoJSON layers, markers per barangay, and routing in this space.</small>
+        </div>
+      </section>
+
+      <section id="critical-alerts" class="panel">
+        <h2>Critical Alerts</h2>
+        <div class="alerts">
+          <article class="alert high">
+            <h3>Escalation Required</h3>
+            <p>District Cluster B has 4 pending reports and 3 high-risk barangays with increasing malnutrition rates.</p>
+            <small>Generated by system monitor: 11:03 AM</small>
+          </article>
+          <article class="alert medium">
+            <h3>Admin Compliance Notice</h3>
+            <p>City Health Office has 2 delayed submissions. Recommend notifying assigned admins.</p>
+            <small>Generated by system monitor: 10:47 AM</small>
+          </article>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script>
+    (function () {
+      const currentRole = sessionStorage.getItem("userRole");
+      if (currentRole !== "super_admin") {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const layout = document.querySelector(".layout");
+      const sidebarToggle = document.querySelector("#sidebar-toggle");
+      const logoutBtn = document.querySelector("#logout-btn");
+
+      if (layout && sidebarToggle) {
+        sidebarToggle.addEventListener("click", function () {
+          const isOpen = layout.classList.toggle("sidebar-open");
+          layout.classList.toggle("sidebar-closed", !isOpen);
+          sidebarToggle.setAttribute("aria-expanded", String(isOpen));
+        });
+      }
+
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", function () {
+          sessionStorage.removeItem("userRole");
+          window.location.href = "login.html";
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

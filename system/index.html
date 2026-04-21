@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIS-Based Health Monitoring System</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <button type="button" class="menu-fab" id="sidebar-toggle" aria-label="Toggle navigation" aria-expanded="true">
+    <span class="menu-fab-lines">
+      <span></span>
+      <span></span>
+      <span></span>
+    </span>
+  </button>
+  <main class="layout sidebar-open">
+    <aside class="sidebar">
+      <h2>Navigation</h2>
+      <p class="nav-group-title">Main</p>
+      <nav>
+        <a href="#admin-dashboard">Admin Dashboard</a>
+        <a href="#case-management">Case Management</a>
+      </nav>
+      <hr class="sidebar-divider">
+      <p class="nav-group-title">Case Workflow</p>
+      <nav>
+        <a href="#case-form-panel">Case Entry Form</a>
+        <a href="#case-records-panel">Case Records</a>
+        <a href="#history-panel">Submission History</a>
+        <a href="#feedback-panel">Feedback</a>
+      </nav>
+      <div class="legend">
+        <h3>Legend</h3>
+        <p><span class="dot high"></span>High-risk barangay</p>
+        <p><span class="dot medium"></span>Moderate-risk barangay</p>
+        <p><span class="dot low"></span>Low-risk barangay</p>
+      </div>
+      <button type="button" class="btn ghost logout-btn sidebar-logout" id="logout-btn">Logout</button>
+    </aside>
+
+    <section class="content">
+      <section id="admin-dashboard" class="panel">
+        <div class="panel-title">
+          <h2>Admin Dashboard</h2>
+          <span class="pill role-admin">Role: Admin</span>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <h3>Total Children Assessed</h3>
+            <p class="number">1,248</p>
+            <small>Current month</small>
+          </article>
+          <article class="card warning">
+            <h3>Identified Malnourished</h3>
+            <p class="number">147</p>
+            <small>11.8% prevalence</small>
+          </article>
+          <article class="card danger">
+            <h3>Urgent Alerts</h3>
+            <p class="number">6</p>
+            <small>Need immediate action</small>
+          </article>
+        </div>
+      </section>
+
+      <section id="case-management" class="panel">
+        <div class="panel-title">
+          <h2>Case Management</h2>
+          <span class="pill role-admin">Barangay Health Worker</span>
+        </div>
+
+        <div class="case-summary" id="case-summary">
+          <article class="summary-item">
+            <h3>Monthly Screened</h3>
+            <p id="summary-screened">1</p>
+          </article>
+          <article class="summary-item warning">
+            <h3>Monthly Malnourished</h3>
+            <p id="summary-malnourished">1</p>
+          </article>
+          <article class="summary-item">
+            <h3>Prevalence Rate</h3>
+            <p id="summary-prevalence">100.0%</p>
+          </article>
+          <article class="summary-item low">
+            <h3>Submitted Cases</h3>
+            <p id="summary-submitted">0</p>
+          </article>
+        </div>
+
+        <form id="case-form" class="case-form">
+          <div id="case-form-panel"></div>
+          <div class="form-grid form-grid-wide">
+            <label for="child-name">
+              Child Full Name
+              <input type="text" id="child-name" placeholder="e.g. Juan Dela Cruz" required>
+            </label>
+            <label for="child-age">
+              Age
+              <input type="number" id="child-age" min="0" max="18" placeholder="0-18" required>
+            </label>
+            <label for="child-sex">
+              Sex
+              <select id="child-sex" required>
+                <option value="">Select sex</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </label>
+            <label for="barangay-name">
+              Barangay
+              <input type="text" id="barangay-name" placeholder="e.g. Barangay 1" required>
+            </label>
+            <label for="date-screened">
+              Date Screened
+              <input type="date" id="date-screened" required>
+            </label>
+            <label for="nutritional-status">
+              Nutritional Status
+              <select id="nutritional-status" required>
+                <option value="">Select status</option>
+                <option value="Severely Underweight">Severely Underweight</option>
+                <option value="Underweight">Underweight</option>
+                <option value="Normal">Normal</option>
+              </select>
+            </label>
+            <label for="workflow-status">
+              Workflow Status
+              <select id="workflow-status" required>
+                <option value="Draft">Draft</option>
+                <option value="For Submission">For Submission</option>
+                <option value="Returned for Correction">Returned for Correction</option>
+              </select>
+            </label>
+            <label for="case-remarks" class="full-width">
+              Remarks / Notes
+              <textarea id="case-remarks" rows="2" placeholder="Optional case notes or correction remarks"></textarea>
+            </label>
+          </div>
+          <div class="action-row action-row-between">
+            <div class="action-group">
+              <button type="submit" class="btn primary" id="save-case-btn">Add Case</button>
+              <button type="button" class="btn ghost" id="clear-form-btn">Clear Form</button>
+            </div>
+            <button type="button" class="btn success" id="submit-cases-btn">Submit Case List to Super Admin</button>
+          </div>
+          <p class="status-text" id="submission-status">No submission yet.</p>
+        </form>
+
+        <div class="filters-bar">
+          <input type="text" id="filter-search" placeholder="Search child name">
+          <input type="text" id="filter-barangay" placeholder="Filter by barangay">
+          <select id="filter-nutrition">
+            <option value="">All nutrition status</option>
+            <option value="Severely Underweight">Severely Underweight</option>
+            <option value="Underweight">Underweight</option>
+            <option value="Normal">Normal</option>
+          </select>
+          <select id="filter-workflow">
+            <option value="">All workflow status</option>
+            <option value="Draft">Draft</option>
+            <option value="For Submission">For Submission</option>
+            <option value="Submitted">Submitted</option>
+            <option value="Returned for Correction">Returned for Correction</option>
+          </select>
+        </div>
+
+        <div class="table-wrap" id="case-records-panel">
+          <table class="cases-table">
+            <thead>
+              <tr>
+                <th>Child Name</th>
+                <th>Age</th>
+                <th>Sex</th>
+                <th>Barangay</th>
+                <th>Date Screened</th>
+                <th>Nutrition Status</th>
+                <th>Workflow</th>
+                <th>Remarks</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="cases-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="support-grid">
+          <section class="subpanel" id="history-panel">
+            <h3>Submission History</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Submission Time</th>
+                    <th>Cases Submitted</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="submission-history-body">
+                  <tr>
+                    <td colspan="3" class="empty-row">No submissions yet.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="subpanel" id="feedback-panel">
+            <h3>Notifications and Feedback</h3>
+            <ul id="feedback-list" class="feedback-list">
+              <li class="empty-row">No returned cases.</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
+    </section>
+  </main>
+  <script>
+    (function () {
+      const currentRole = sessionStorage.getItem("userRole");
+      if (currentRole !== "admin") {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const layout = document.querySelector(".layout");
+      const sidebarToggle = document.querySelector("#sidebar-toggle");
+      const logoutBtn = document.querySelector("#logout-btn");
+      const caseForm = document.querySelector("#case-form");
+      const casesBody = document.querySelector("#cases-tbody");
+      const childNameInput = document.querySelector("#child-name");
+      const childAgeInput = document.querySelector("#child-age");
+      const childSexInput = document.querySelector("#child-sex");
+      const barangayInput = document.querySelector("#barangay-name");
+      const dateScreenedInput = document.querySelector("#date-screened");
+      const statusInput = document.querySelector("#nutritional-status");
+      const workflowInput = document.querySelector("#workflow-status");
+      const remarksInput = document.querySelector("#case-remarks");
+      const clearFormBtn = document.querySelector("#clear-form-btn");
+      const submitCasesBtn = document.querySelector("#submit-cases-btn");
+      const saveCaseBtn = document.querySelector("#save-case-btn");
+      const submissionStatus = document.querySelector("#submission-status");
+      const summaryScreened = document.querySelector("#summary-screened");
+      const summaryMalnourished = document.querySelector("#summary-malnourished");
+      const summaryPrevalence = document.querySelector("#summary-prevalence");
+      const summarySubmitted = document.querySelector("#summary-submitted");
+      const filterSearch = document.querySelector("#filter-search");
+      const filterBarangay = document.querySelector("#filter-barangay");
+      const filterNutrition = document.querySelector("#filter-nutrition");
+      const filterWorkflow = document.querySelector("#filter-workflow");
+      const submissionHistoryBody = document.querySelector("#submission-history-body");
+      const feedbackList = document.querySelector("#feedback-list");
+
+      let editingCaseId = null;
+      let nextId = 2;
+      const submissionHistory = [];
+      const cases = [
+        {
+          id: 1,
+          childName: "Sample Child A",
+          childAge: "4",
+          childSex: "Female",
+          barangay: "Barangay 1",
+          dateScreened: "2026-04-17",
+          nutrition: "Underweight",
+          workflow: "Draft",
+          remarks: "Initial assessment completed."
+        }
+      ];
+
+      if (layout && sidebarToggle) {
+        sidebarToggle.addEventListener("click", function () {
+          const isOpen = layout.classList.toggle("sidebar-open");
+          layout.classList.toggle("sidebar-closed", !isOpen);
+          sidebarToggle.setAttribute("aria-expanded", String(isOpen));
+        });
+      }
+
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", function () {
+          sessionStorage.removeItem("userRole");
+          window.location.href = "login.html";
+        });
+      }
+
+      if (!caseForm || !casesBody) return;
+
+      function resetCaseForm() {
+        caseForm.reset();
+        workflowInput.value = "Draft";
+        editingCaseId = null;
+        saveCaseBtn.textContent = "Add Case";
+      }
+
+      function getStatusPill(status) {
+        if (status === "Severely Underweight") {
+          return '<span class="pill risk high">Severely Underweight</span>';
+        }
+        if (status === "Underweight") {
+          return '<span class="pill risk medium">Underweight</span>';
+        }
+        return '<span class="pill risk low">Normal</span>';
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function getWorkflowPill(status) {
+        if (status === "Submitted") return '<span class="pill wf submitted">Submitted</span>';
+        if (status === "For Submission") return '<span class="pill wf for-submit">For Submission</span>';
+        if (status === "Returned for Correction") return '<span class="pill wf returned">Returned for Correction</span>';
+        return '<span class="pill wf draft">Draft</span>';
+      }
+
+      function updateSummary() {
+        const total = cases.length;
+        const malnourished = cases.filter(function (item) {
+          return item.nutrition === "Severely Underweight" || item.nutrition === "Underweight";
+        }).length;
+        const submitted = cases.filter(function (item) {
+          return item.workflow === "Submitted";
+        }).length;
+        const prevalence = total === 0 ? 0 : (malnourished / total) * 100;
+
+        summaryScreened.textContent = String(total);
+        summaryMalnourished.textContent = String(malnourished);
+        summaryPrevalence.textContent = prevalence.toFixed(1) + "%";
+        summarySubmitted.textContent = String(submitted);
+      }
+
+      function renderSubmissionHistory() {
+        submissionHistoryBody.innerHTML = "";
+        if (submissionHistory.length === 0) {
+          submissionHistoryBody.innerHTML = '<tr><td colspan="3" class="empty-row">No submissions yet.</td></tr>';
+          return;
+        }
+
+        submissionHistory.forEach(function (item) {
+          const row = document.createElement("tr");
+          row.innerHTML =
+            "<td>" + escapeHtml(item.time) + "</td>" +
+            "<td>" + escapeHtml(item.count) + "</td>" +
+            '<td><span class="pill wf submitted">Submitted</span></td>';
+          submissionHistoryBody.appendChild(row);
+        });
+      }
+
+      function renderFeedback() {
+        feedbackList.innerHTML = "";
+        const returnedCases = cases.filter(function (item) {
+          return item.workflow === "Returned for Correction" && item.remarks;
+        });
+
+        if (returnedCases.length === 0) {
+          feedbackList.innerHTML = '<li class="empty-row">No returned cases.</li>';
+          return;
+        }
+
+        returnedCases.forEach(function (item) {
+          const listItem = document.createElement("li");
+          listItem.innerHTML = "<strong>" +
+            escapeHtml(item.childName) +
+            " (" +
+            escapeHtml(item.barangay) +
+            ")</strong>: " +
+            escapeHtml(item.remarks);
+          feedbackList.appendChild(listItem);
+        });
+      }
+
+      function getFilteredCases() {
+        const search = filterSearch.value.trim().toLowerCase();
+        const barangayFilter = filterBarangay.value.trim().toLowerCase();
+        const nutritionFilter = filterNutrition.value;
+        const workflowFilter = filterWorkflow.value;
+
+        return cases.filter(function (item) {
+          const matchSearch = !search || item.childName.toLowerCase().includes(search);
+          const matchBarangay = !barangayFilter || item.barangay.toLowerCase().includes(barangayFilter);
+          const matchNutrition = !nutritionFilter || item.nutrition === nutritionFilter;
+          const matchWorkflow = !workflowFilter || item.workflow === workflowFilter;
+          return matchSearch && matchBarangay && matchNutrition && matchWorkflow;
+        });
+      }
+
+      function renderCases() {
+        const filteredCases = getFilteredCases();
+        casesBody.innerHTML = "";
+
+        if (filteredCases.length === 0) {
+          casesBody.innerHTML =
+            '<tr><td colspan="9" class="empty-row">No cases match the current filters.</td></tr>';
+          return;
+        }
+
+        filteredCases.forEach(function (item) {
+          const row = document.createElement("tr");
+          row.setAttribute("data-id", String(item.id));
+          row.innerHTML =
+            "<td>" + escapeHtml(item.childName) + "</td>" +
+            "<td>" + escapeHtml(item.childAge) + "</td>" +
+            "<td>" + escapeHtml(item.childSex) + "</td>" +
+            "<td>" + escapeHtml(item.barangay) + "</td>" +
+            "<td>" + escapeHtml(item.dateScreened) + "</td>" +
+            "<td>" + getStatusPill(item.nutrition) + "</td>" +
+            "<td>" + getWorkflowPill(item.workflow) + "</td>" +
+            "<td>" + escapeHtml(item.remarks || "-") + "</td>" +
+            '<td class="cell-actions">' +
+            '<button type="button" class="btn small edit-btn">Edit</button>' +
+            '<button type="button" class="btn small danger delete-btn">Delete</button>' +
+            '<button type="button" class="btn small ghost remark-btn">Add Remark</button>' +
+            "</td>";
+          casesBody.appendChild(row);
+        });
+      }
+
+      function refreshUI() {
+        renderCases();
+        updateSummary();
+        renderSubmissionHistory();
+        renderFeedback();
+      }
+
+      caseForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const childName = childNameInput.value.trim();
+        const childAge = childAgeInput.value.trim();
+        const childSex = childSexInput.value.trim();
+        const barangay = barangayInput.value.trim();
+        const dateScreened = dateScreenedInput.value.trim();
+        const nutrition = statusInput.value.trim();
+        const workflow = workflowInput.value.trim();
+        const remarks = remarksInput.value.trim();
+
+        if (!childName || !childAge || !childSex || !barangay || !dateScreened || !nutrition || !workflow) {
+          submissionStatus.textContent = "Please fill out all required fields.";
+          return;
+        }
+
+        const ageNumber = Number(childAge);
+        if (!Number.isInteger(ageNumber) || ageNumber < 0 || ageNumber > 18) {
+          submissionStatus.textContent = "Age must be a whole number from 0 to 18.";
+          return;
+        }
+
+        const isDuplicate = cases.some(function (item) {
+          return item.id !== editingCaseId &&
+            item.childName.toLowerCase() === childName.toLowerCase() &&
+            item.barangay.toLowerCase() === barangay.toLowerCase() &&
+            item.dateScreened === dateScreened;
+        });
+
+        if (isDuplicate) {
+          submissionStatus.textContent = "Duplicate case detected for the same child, barangay, and date.";
+          return;
+        }
+
+        if (editingCaseId) {
+          const currentCase = cases.find(function (item) {
+            return item.id === editingCaseId;
+          });
+          if (!currentCase) return;
+
+          currentCase.childName = childName;
+          currentCase.childAge = childAge;
+          currentCase.childSex = childSex;
+          currentCase.barangay = barangay;
+          currentCase.dateScreened = dateScreened;
+          currentCase.nutrition = nutrition;
+          currentCase.workflow = workflow;
+          currentCase.remarks = remarks;
+        } else {
+          cases.push({
+            id: nextId++,
+            childName: childName,
+            childAge: childAge,
+            childSex: childSex,
+            barangay: barangay,
+            dateScreened: dateScreened,
+            nutrition: nutrition,
+            workflow: workflow,
+            remarks: remarks
+          });
+        }
+
+        submissionStatus.textContent = "Case list updated. Ready for submission.";
+        refreshUI();
+        resetCaseForm();
+      });
+
+      casesBody.addEventListener("click", function (event) {
+        const target = event.target;
+        if (!(target instanceof HTMLButtonElement)) return;
+
+        const row = target.closest("tr");
+        if (!row) return;
+        const caseId = Number(row.getAttribute("data-id"));
+        const currentCase = cases.find(function (item) {
+          return item.id === caseId;
+        });
+        if (!currentCase) return;
+
+        if (target.classList.contains("delete-btn")) {
+          const currentIndex = cases.findIndex(function (item) {
+            return item.id === caseId;
+          });
+          if (currentIndex >= 0) {
+            cases.splice(currentIndex, 1);
+          }
+          if (editingCaseId === caseId) resetCaseForm();
+          submissionStatus.textContent = "Case deleted. Review and submit updates.";
+          refreshUI();
+          return;
+        }
+
+        if (target.classList.contains("edit-btn")) {
+          childNameInput.value = currentCase.childName;
+          childAgeInput.value = currentCase.childAge;
+          childSexInput.value = currentCase.childSex;
+          barangayInput.value = currentCase.barangay;
+          dateScreenedInput.value = currentCase.dateScreened;
+          statusInput.value = currentCase.nutrition;
+          workflowInput.value = currentCase.workflow;
+          remarksInput.value = currentCase.remarks || "";
+          editingCaseId = caseId;
+          saveCaseBtn.textContent = "Update Case";
+          submissionStatus.textContent = "Editing case for " + currentCase.childName + ".";
+          return;
+        }
+
+        if (target.classList.contains("remark-btn")) {
+          const remarkInput = window.prompt("Enter return/correction remark:", currentCase.remarks || "");
+          if (remarkInput === null) return;
+          currentCase.remarks = remarkInput.trim();
+          if (currentCase.remarks) {
+            currentCase.workflow = "Returned for Correction";
+          }
+          submissionStatus.textContent = "Remark saved.";
+          refreshUI();
+        }
+      });
+
+      clearFormBtn.addEventListener("click", function () {
+        resetCaseForm();
+      });
+
+      submitCasesBtn.addEventListener("click", function () {
+        const totalCases = cases.length;
+        if (totalCases === 0) {
+          submissionStatus.textContent = "No cases available to submit.";
+          return;
+        }
+
+        let submittedNow = 0;
+        cases.forEach(function (item) {
+          if (item.workflow === "Draft" || item.workflow === "For Submission") {
+            item.workflow = "Submitted";
+            submittedNow += 1;
+          }
+        });
+
+        submissionHistory.unshift({
+          time: new Date().toLocaleString(),
+          count: submittedNow
+        });
+
+        submissionStatus.textContent = submittedNow > 0
+          ? "Submitted " + submittedNow + " case(s) to Super Admin for validation."
+          : "No Draft/For Submission cases were available to submit.";
+        refreshUI();
+      });
+
+      [filterSearch, filterBarangay, filterNutrition, filterWorkflow].forEach(function (filterInput) {
+        filterInput.addEventListener("input", renderCases);
+        filterInput.addEventListener("change", renderCases);
+      });
+
+      refreshUI();
+    })();
+  </script>
+</body>
+</html>

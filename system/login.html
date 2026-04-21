@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | GIS Health Monitoring</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-page">
+  <main class="login-wrap">
+    <section class="login-card">
+      <h1>GIS-Based Health Monitoring System</h1>
+      <p>Select your account type to continue.</p>
+
+      <form id="login-form" class="login-form">
+        <label for="role">Login as</label>
+        <select id="role" required>
+          <option value="">Select role</option>
+          <option value="admin">Admin (Barangay Health Worker)</option>
+          <option value="super_admin">Super Admin</option>
+        </select>
+        <button type="submit" class="btn primary login-btn">Login</button>
+      </form>
+
+      <p class="status-text" id="login-status">Please choose a role.</p>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const loginForm = document.querySelector("#login-form");
+      const roleInput = document.querySelector("#role");
+      const loginStatus = document.querySelector("#login-status");
+
+      if (!loginForm || !roleInput || !loginStatus) return;
+
+      loginForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const role = roleInput.value;
+
+        if (!role) {
+          loginStatus.textContent = "Please select a valid role.";
+          return;
+        }
+
+        sessionStorage.setItem("userRole", role);
+        loginStatus.textContent = "Login successful. Redirecting...";
+
+        if (role === "admin") {
+          window.location.href = "index.html";
+          return;
+        }
+
+        window.location.href = "super-admin.html";
+      });
+    })();
+  </script>
+</body>
+</html>
